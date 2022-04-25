@@ -1,0 +1,99 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+struct read_in{
+	char linkid[100],node1[100],node2[100],length[100],way[100],veg[100],arch[100],land[100],poi[100];
+}in[1000010];
+struct mp_node{
+	int to,next;
+    double w;
+}e[1000010];
+struct point{
+	int id,x,y;
+}p[100010];
+int head[100010];
+int path_cnt=0;
+int node_cnt=0;
+void add(int u,int v,double len){
+	e[++path_cnt].next=head[u];
+	e[path_cnt].to=v;
+    e[path_cnt].w=len;
+	head[u]=path_cnt;
+}
+void st(double s[],int start,int end)
+{
+    int i,j;
+    i=start;
+    j = end;
+    s[0]=s[start];
+    while(i<j)
+    {
+        while(i<j&&s[0]<s[j])
+            j--;
+        if(i<j)
+        {
+            s[i]=s[j];
+            i++;
+        }
+        while(i<j&&s[i]<=s[0])
+            i++;
+        if(i<j)
+        {
+            s[j]=s[i];
+            j--;
+        }
+    }
+    s[i]=s[0];
+    if (start<i)
+        st(s,start,j-1);
+    if (i<end)
+        st(s,j+1,end);
+}
+void unique(int a[],int s,int t){
+    int tmp=a[s];
+    int ct=0;
+    int b[100010];
+    for(int i=s+1;i<=t;i++){
+        if(a[i]!=tmp) {
+            b[++ct]=a[i];
+            tmp=a[i];
+        }
+    }
+    for(int i=s;i<=s+ct;i++){
+        a[i]=b[i-s+1];
+    }
+}
+
+void readin(){
+    char filename[100];
+	long long link_cnt=0,node_cnt=0;
+
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf("open file error!\n");
+        exit(1);
+    }
+
+	while(!feof(fp)){
+        char buffer[100];
+		fscanf(fp,"%s",buffer);
+		link_cnt++;
+		sscanf( buffer,
+				"<link id=%s node=%s node=%s way=%s length=%s veg=%s arch=%s land=%s POI=%s;/link>",
+				in[link_cnt].linkid,in[link_cnt].node1,in[link_cnt].node2,in[link_cnt].way,in[link_cnt].length,
+				in[link_cnt].veg,in[link_cnt].arch,in[link_cnt].land,in[link_cnt].poi
+		);
+		node_cnt++;
+		sscanf( buffer,
+				"<node id=%s lat=%s lon=%s /node>",
+				p[node_cnt].id,p[node_cnt].x,p[node_cnt].y
+		);
+    }
+        for(int i=1;i<=link_cnt;i++){
+            double w=atoi(in[i].length);
+            int u=atoi(in[i].node1);
+            int v=atoi(in[i].node2);
+            add(u,v,w);
+            add(v,u,w);
+        }
+}
